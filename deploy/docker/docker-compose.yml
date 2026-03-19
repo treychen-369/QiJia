@@ -1,0 +1,111 @@
+# ============================================
+# QiJia (齐家) - Docker Compose 基础配置
+# ============================================
+# 此文件定义所有环境共享的服务配置
+# 使用方式：配合环境覆盖文件使用
+#
+# 开发环境：docker-compose -f deploy/docker/docker-compose.yml -f deploy/docker/docker-compose.dev.yml up -d
+# 生产环境：docker-compose -f deploy/docker/docker-compose.yml -f deploy/docker/docker-compose.prod.yml up -d
+# ============================================
+
+services:
+  # ==========================================
+  # PostgreSQL 数据库
+  # ==========================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: finance-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-finance_system}
+      POSTGRES_USER: ${POSTGRES_USER:-finance_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?数据库密码必须设置}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - finance-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-finance_user} -d ${POSTGRES_DB:-finance_system}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==========================================
+  # Redis 缓存
+  # ==========================================
+  redis:
+    image: redis:7-alpine
+    container_name: finance-redis
+    command: redis-server --maxmemory 128mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    networks:
+      - finance-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==========================================
+  # Next.js 应用服务
+  # ==========================================
+  app:
+    # 使用预构建的镜像（CNB 部署时上传）
+    # 如果需要本地构建，使用: docker compose build app
+    image: finance-app:latest
+    build:
+      context: .
+      dockerfile: deploy/docker/Dockerfile
+    container_name: finance-app
+    environment:
+      - NODE_ENV=${NODE_ENV:-production}
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-finance_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-finance_system}
+      - REDIS_URL=redis://redis:6379
+      - NEXTAUTH_URL=${NEXTAUTH_URL:?NEXTAUTH_URL必须设置}
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:?NEXTAUTH_SECRET必须设置}
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-}
+      - SECURITIES_API_ENABLED=${SECURITIES_API_ENABLED:-false}
+      - SECURITIES_API_KEY=${SECURITIES_API_KEY:-}
+      - SECURITIES_API_ENDPOINT=${SECURITIES_API_ENDPOINT:-https://api.tushare.pro}
+      - SECURITIES_API_PROVIDER=${SECURITIES_API_PROVIDER:-tushare}
+      - SECURITIES_API_RATE_LIMIT=${SECURITIES_API_RATE_LIMIT:-60}
+      - LOG_LEVEL=${LOG_LEVEL:-WARN}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - finance-network
+    restart: unless-stopped
+
+  # ==========================================
+  # Nginx 反向代理
+  # ==========================================
+  nginx:
+    image: nginx:alpine
+    container_name: finance-nginx
+    depends_on:
+      - app
+    networks:
+      - finance-network
+    restart: unless-stopped
+
+# ==========================================
+# 数据卷
+# ==========================================
+volumes:
+  postgres_data:
+    name: finance-postgres-data
+  redis_data:
+    name: finance-redis-data
+
+# ==========================================
+# 网络
+# ==========================================
+networks:
+  finance-network:
+    name: finance-network
+    driver: bridge

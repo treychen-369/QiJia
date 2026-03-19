@@ -1,0 +1,311 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Dashboard V2 animations */
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 自定义CSS变量 - 支持深色模式 */
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 94.1%;
+  }
+
+  /* 蓝色专业版主题 — 鲜明蓝色系，高饱和度深蓝 */
+  /* 背景 #0a1929 | 卡片 #0d2137 | 边框 #1a3a5c | 文字 #d6e4f0 */
+  .blue-pro {
+    --background: 214 60% 10%;
+    --foreground: 210 40% 90%;
+    --card: 213 58% 13.5%;
+    --card-foreground: 210 40% 90%;
+    --popover: 213 58% 13.5%;
+    --popover-foreground: 210 40% 90%;
+    --primary: 210 100% 56%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 213 50% 20%;
+    --secondary-foreground: 210 40% 90%;
+    --muted: 213 45% 18%;
+    --muted-foreground: 214 30% 62%;
+    --accent: 213 50% 22%;
+    --accent-foreground: 210 40% 90%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 210 40% 90%;
+    --border: 213 45% 24%;
+    --input: 213 45% 20%;
+    --ring: 210 100% 56%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+/* 财务系统专用样式 */
+@layer components {
+  /* 玻璃态效果 */
+  .glass {
+    @apply bg-white/10 backdrop-blur-md border border-white/20;
+  }
+  
+  .glass-dark {
+    @apply bg-black/10 backdrop-blur-md border border-white/10;
+  }
+
+  /* 数字显示样式 */
+  .number-display {
+    @apply font-mono text-right tabular-nums;
+  }
+
+  /* 盈亏颜色 */
+  .profit-positive {
+    @apply text-success-600 dark:text-success-400;
+  }
+  
+  .profit-negative {
+    @apply text-danger-600 dark:text-danger-400;
+  }
+  
+  .profit-neutral {
+    @apply text-muted-foreground;
+  }
+
+  /* 卡片样式 */
+  .finance-card {
+    @apply bg-card border border-border rounded-lg p-6 shadow-sm hover:shadow-card-hover transition-all duration-200;
+  }
+
+  /* 渐变背景 */
+  .gradient-primary {
+    @apply bg-gradient-to-br from-primary-500 to-primary-700;
+  }
+  
+  .gradient-success {
+    @apply bg-gradient-to-br from-success-500 to-success-700;
+  }
+  
+  .gradient-warning {
+    @apply bg-gradient-to-br from-warning-500 to-warning-700;
+  }
+
+  /* 动画效果 */
+  .animate-fade-in-up {
+    @apply animate-fade-in;
+  }
+
+  /* 表格样式 */
+  .finance-table {
+    @apply w-full border-collapse;
+  }
+  
+  .finance-table th {
+    @apply bg-muted/50 border-b border-border px-4 py-3 text-left text-sm font-medium text-muted-foreground;
+  }
+  
+  .finance-table td {
+    @apply border-b border-border px-4 py-3 text-sm;
+  }
+  
+  .finance-table tr:hover {
+    @apply bg-muted/30;
+  }
+
+  /* 按钮变体 */
+  .btn-primary {
+    @apply bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-md font-medium transition-colors;
+  }
+  
+  .btn-secondary {
+    @apply bg-secondary hover:bg-secondary/80 text-secondary-foreground px-4 py-2 rounded-md font-medium transition-colors;
+  }
+  
+  .btn-outline {
+    @apply border border-border hover:bg-accent hover:text-accent-foreground px-4 py-2 rounded-md font-medium transition-colors;
+  }
+
+  /* 状态指示器 */
+  .status-indicator {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  
+  .status-success {
+    @apply bg-success-100 text-success-800 dark:bg-success-900 dark:text-success-200;
+  }
+  
+  .status-warning {
+    @apply bg-warning-100 text-warning-800 dark:bg-warning-900 dark:text-warning-200;
+  }
+  
+  .status-danger {
+    @apply bg-danger-100 text-danger-800 dark:bg-danger-900 dark:text-danger-200;
+  }
+
+  /* 加载状态 */
+  .loading-skeleton {
+    @apply animate-pulse bg-muted rounded;
+  }
+
+  /* 滚动条样式 */
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground)) transparent;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--muted-foreground));
+    border-radius: 3px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--foreground));
+  }
+}
+
+/* 响应式字体大小 */
+@layer utilities {
+  .text-responsive-xs {
+    @apply text-xs sm:text-sm;
+  }
+  
+  .text-responsive-sm {
+    @apply text-sm sm:text-base;
+  }
+  
+  .text-responsive-base {
+    @apply text-base sm:text-lg;
+  }
+  
+  .text-responsive-lg {
+    @apply text-lg sm:text-xl;
+  }
+  
+  .text-responsive-xl {
+    @apply text-xl sm:text-2xl;
+  }
+  
+  .text-responsive-2xl {
+    @apply text-2xl sm:text-3xl;
+  }
+  
+  /* 隐藏滚动条 */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* 打印样式 */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .print-break-before {
+    page-break-before: always;
+  }
+  
+  .print-break-after {
+    page-break-after: always;
+  }
+  
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+/* 深色模式 & 蓝色专业版图表适配 */
+.dark .recharts-cartesian-grid-horizontal line,
+.dark .recharts-cartesian-grid-vertical line,
+.blue-pro .recharts-cartesian-grid-horizontal line,
+.blue-pro .recharts-cartesian-grid-vertical line {
+  stroke: hsl(var(--border));
+}
+
+.dark .recharts-text,
+.blue-pro .recharts-text {
+  fill: hsl(var(--foreground));
+}
+
+/* 自定义选择样式 */
+::selection {
+  background-color: hsl(var(--primary) / 0.2);
+}
+
+/* 焦点样式 */
+.focus-visible {
+  @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+}
+
+/* 禁用状态 */
+.disabled {
+  @apply opacity-50 cursor-not-allowed;
+}

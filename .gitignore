@@ -1,0 +1,64 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build output
+.next/
+out/
+build/
+dist/
+
+# Environment files (CRITICAL: never commit real secrets)
+.env
+.env.local
+.env.production
+.env.production.local
+.env.development.local
+.env.test.local
+deploy/env/.env.dev
+deploy/env/.env.prod
+
+# Database
+*.sql
+*.dump
+*.backup
+database/backups/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing
+coverage/
+e2e-*-output.txt
+e2e/*.txt
+playwright-report/
+test-results/
+e2e/.auth/
+
+# Temporary files
+temp/
+tmp/
+*.tmp
+*.log
+
+# Release artifacts
+releases/
+
+# Misc
+$null
+*.zip

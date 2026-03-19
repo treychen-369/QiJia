@@ -1,0 +1,93 @@
+services:
+  # PostgreSQL数据库
+  postgres:
+    image: postgres:15-alpine
+    container_name: finance-postgres
+    environment:
+      POSTGRES_DB: finance_system
+      POSTGRES_USER: finance_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - finance-network
+    restart: unless-stopped
+    # 不对外暴露端口，只在内部网络访问
+
+  # Redis缓存
+  redis:
+    image: redis:7-alpine
+    container_name: finance-redis
+    command: redis-server --maxmemory 128mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+    networks:
+      - finance-network
+    restart: unless-stopped
+    # 不对外暴露端口
+
+  # 应用服务
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: finance-app
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://finance_user:${DB_PASSWORD}@postgres:5432/finance_system
+      - REDIS_URL=redis://redis:6379
+      - NEXTAUTH_URL=${NEXTAUTH_URL}
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-}
+      - SECURITIES_API_ENABLED=${SECURITIES_API_ENABLED:-true}
+      - SECURITIES_API_KEY=${SECURITIES_API_KEY:-}
+      - SECURITIES_API_ENDPOINT=${SECURITIES_API_ENDPOINT:-https://api.tushare.pro}
+      - SECURITIES_API_PROVIDER=${SECURITIES_API_PROVIDER:-tushare}
+      - SECURITIES_API_RATE_LIMIT=${SECURITIES_API_RATE_LIMIT:-60}
+      - LOG_LEVEL=WARN
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - finance-network
+    restart: unless-stopped
+    # 不对外暴露 3000 端口，通过 nginx 代理
+    volumes:
+      - ./scripts:/app/scripts:ro
+
+  # Nginx反向代理 + Let's Encrypt
+  nginx:
+    image: nginx:alpine
+    container_name: finance-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.prod.conf:/etc/nginx/nginx.conf:ro
+      - ./certbot/conf:/etc/letsencrypt:ro
+      - ./certbot/www:/var/www/certbot:ro
+    depends_on:
+      - app
+    networks:
+      - finance-network
+    restart: unless-stopped
+    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+
+  # Certbot 自动续期
+  certbot:
+    image: certbot/certbot
+    container_name: finance-certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    networks:
+      - finance-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  finance-network:
+    driver: bridge

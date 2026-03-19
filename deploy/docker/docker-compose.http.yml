@@ -1,0 +1,28 @@
+# ============================================
+# HTTP 模式覆盖配置（无需 SSL 证书）
+# ============================================
+# 适用场景：
+# - 测试环境
+# - 域名未备案
+# - IP 直接访问
+# 
+# 使用方式：
+# docker compose -f deploy/docker/docker-compose.yml \
+#   -f deploy/docker/docker-compose.http.yml \
+#   --env-file deploy/env/.env.prod \
+#   --project-directory . up -d
+# ============================================
+
+services:
+  # App 服务覆盖 - HTTP 模式环境变量
+  app:
+    environment:
+      # HTTP 模式下 Cookie 不需要 secure
+      - COOKIE_SECURE=false
+
+  # Nginx HTTP 模式配置
+  nginx:
+    ports:
+      - "80:80"
+    volumes:
+      - ./deploy/nginx/nginx.http.conf:/etc/nginx/nginx.conf:ro
